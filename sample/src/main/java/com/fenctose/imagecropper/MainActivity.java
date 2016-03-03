@@ -4,10 +4,10 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.ViewTreeObserver;
 
@@ -22,7 +22,6 @@ import butterknife.OnClick;
 
 public class MainActivity extends AppCompatActivity {
 
-
     private static final int REQUEST_GALLERY = 21;
     private static final String TAG = "MainActivity";
 
@@ -30,7 +29,6 @@ public class MainActivity extends AppCompatActivity {
     CropperView mImageView;
 
     private Bitmap mBitmap;
-    private boolean isSnappedToCenter = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,31 +64,26 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void loadNewImage(String filePath) {
-        mBitmap = BitmapFactory.decodeFile(filePath);
+        mBitmap = BitmapFactory.decodeResource(getResources(), R.mipmap.demo_image);
         Log.i(TAG, "bitmap: " + mBitmap.getWidth() + " " + mBitmap.getHeight());
 
-        int maxP = Math.max(mBitmap.getWidth(), mBitmap.getHeight());
-        float scale1280 = (float)maxP / 1280;
+        int size = Math.max(mBitmap.getWidth(), mBitmap.getHeight());
+        final float maxScaleFactor = (float)size / 3000;
 
-        if (mImageView.getWidth() != 0) {
-            mImageView.setMaxZoom(mImageView.getWidth() * 2 / 1280f);
-        } else {
+        mImageView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                mImageView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                int minDimen = Math.min(mBitmap.getWidth(), mBitmap.getHeight());
+                float minScaleFactor = (float)minDimen / (float)mImageView.getWidth();
+                mImageView.setMinZoom(1.0f / minScaleFactor);
+                mImageView.setMaxZoom(1.0f / maxScaleFactor);
+            }
+        });
 
-            ViewTreeObserver vto = mImageView.getViewTreeObserver();
-            vto.addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
-                @Override
-                public boolean onPreDraw() {
-                    mImageView.getViewTreeObserver().removeOnPreDrawListener(this);
-                    mImageView.setMaxZoom(mImageView.getWidth() * 2 / 1280f);
-                    return true;
-                }
-            });
-
-        }
-
-        mBitmap = Bitmap.createScaledBitmap(mBitmap, (int)(mBitmap.getWidth()/scale1280),
-                (int)(mBitmap.getHeight()/scale1280), true);
+        mBitmap = Bitmap.createScaledBitmap(mBitmap, mBitmap.getWidth(), mBitmap.getHeight(), true);
         mImageView.setImageBitmap(mBitmap);
+        mImageView.setDebug(true);
     }
 
     private void startGalleryIntent() {
@@ -110,12 +103,14 @@ public class MainActivity extends AppCompatActivity {
 
     private void cropImage() {
 
-        Bitmap bitmap = mImageView.getCroppedBitmap();
+        Bitmap bitmap = mImageView.getCroppedBitmap(1024);
 
         if (bitmap != null) {
 
             try {
-                BitmapUtils.writeBitmapToFile(bitmap, new File(Environment.getExternalStorageDirectory() + "/crop_test.jpg"), 90);
+                String outputPath = Environment.getExternalStorageDirectory() + "/crop_test.jpg";
+                Log.d(MainActivity.class.getSimpleName(), "output: " + outputPath);
+                BitmapUtils.writeBitmapToFile(bitmap, new File(outputPath), 90);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -133,12 +128,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void snapImage() {
-        if (isSnappedToCenter) {
-            mImageView.cropToCenter();
-        } else {
-            mImageView.fitToCenter();
-        }
-
-        isSnappedToCenter = !isSnappedToCenter;
+        mImageView.cropToCenter();
     }
 }

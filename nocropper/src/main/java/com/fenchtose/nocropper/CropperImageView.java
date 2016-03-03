@@ -139,9 +139,6 @@ public class CropperImageView extends ImageView {
                     return;
                 }
 
-                int minDimen = Math.min(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
-                float scaleFactor = (float)minDimen / (float)getWidth();
-                mMinZoom = 1.0f / scaleFactor;
                 mBaseZoom = (float)(bottom - top)/ Math.min(drawable.getIntrinsicHeight(),
                         drawable.getIntrinsicWidth());
 
@@ -539,7 +536,7 @@ public class CropperImageView extends ImageView {
         }
     }
 
-    public Bitmap getCroppedBitmap() {
+    public Bitmap getCroppedBitmap(int size) {
         if (mBitmap == null) {
             Log.e(TAG, "original image is not available");
             return null;
@@ -580,6 +577,9 @@ public class CropperImageView extends ImageView {
             float cropX = -xTrans / scale;
             float X = getWidth() / scale;
 
+            Matrix outputMatrix = new Matrix();
+            outputMatrix.postScale((float)size / X, (float)size / Y);
+
             if (DEBUG) {
                 Log.i(TAG, "cropY: " + cropY);
                 Log.i(TAG, "Y: " + Y);
@@ -616,7 +616,7 @@ public class CropperImageView extends ImageView {
                 if (xTrans >= 0) {
                     // Image is zoomed. Crop from height and add padding to make square
                     bitmap = Bitmap.createBitmap(mBitmap, 0, (int)cropY, mBitmap.getWidth(), (int)Y,
-                            null, true);
+                            outputMatrix, true);
 
                     if (mAddPaddingToMakeSquare) {
                         bitmap = BitmapUtils.addPadding(bitmap, mPaintColor);
@@ -625,13 +625,13 @@ public class CropperImageView extends ImageView {
                 } else {
                     // Crop from width and height both
                     bitmap = Bitmap.createBitmap(mBitmap, (int) cropX, (int)cropY, (int)X, (int)Y,
-                            null, true);
+                            outputMatrix, true);
                 }
             } else {
                 if (yTrans >= 0) {
                     // Image is zoomed. Crop from width and add padding to make square
                     bitmap = Bitmap.createBitmap(mBitmap, (int)cropX, 0, (int)X, mBitmap.getHeight(),
-                            null, true);
+                            outputMatrix, true);
 
                     if (mAddPaddingToMakeSquare) {
                         bitmap = BitmapUtils.addPadding(bitmap, mPaintColor);
@@ -640,7 +640,7 @@ public class CropperImageView extends ImageView {
                 } else {
                     // Crop from width and height both.
                     bitmap = Bitmap.createBitmap(mBitmap, (int) cropX, (int)cropY, (int)X, (int)Y,
-                            null, true);
+                            outputMatrix, true);
 
                 }
 

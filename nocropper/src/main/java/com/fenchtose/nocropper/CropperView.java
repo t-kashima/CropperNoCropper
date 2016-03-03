@@ -6,7 +6,6 @@ import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.os.Build;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
@@ -94,8 +93,8 @@ public class CropperView extends FrameLayout {
         mImageView.setMaxZoom(zoom);
     }
 
-    public Bitmap getCroppedBitmap() {
-        return mImageView.getCroppedBitmap();
+    public Bitmap getCroppedBitmap(int size) {
+        return mImageView.getCroppedBitmap(size);
     }
 
     public boolean isPreScaling() {
