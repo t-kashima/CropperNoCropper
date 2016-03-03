@@ -139,8 +139,9 @@ public class CropperImageView extends ImageView {
                     return;
                 }
 
-                mMinZoom = (float)(bottom - top) / Math.max(drawable.getIntrinsicHeight(),
-                        drawable.getIntrinsicWidth());
+                int minDimen = Math.min(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
+                float scaleFactor = (float)minDimen / (float)getWidth();
+                mMinZoom = 1.0f / scaleFactor;
                 mBaseZoom = (float)(bottom - top)/ Math.min(drawable.getIntrinsicHeight(),
                         drawable.getIntrinsicWidth());
 
@@ -313,7 +314,7 @@ public class CropperImageView extends ImageView {
             Log.i(TAG, "scaled drawable size: " + scaleX * drawable.getIntrinsicWidth() + " " + scaleY * drawable.getIntrinsicHeight());
         }
 
-        if (scaleX <= mMinZoom) {
+        if (scaleX < mMinZoom) {
             if (DEBUG) {
                 Log.i(TAG, "set scale: " + mMinZoom);
             }
