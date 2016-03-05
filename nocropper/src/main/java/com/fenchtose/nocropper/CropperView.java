@@ -153,12 +153,4 @@ public class CropperView extends FrameLayout {
     public int getCropperWidth() {
         return mImageView != null ? mImageView.getWidth() : 0;
     }
-
-    public boolean isMakeSquare() {
-        return mImageView.isMakeSquare();
-    }
-
-    public void setMakeSquare(boolean mAddPaddingToMakeSquare) {
-        mImageView.setMakeSquare(mAddPaddingToMakeSquare);
-    }
 }

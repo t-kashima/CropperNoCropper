@@ -47,8 +47,6 @@ public class CropperImageView extends ImageView {
     private boolean doPreScaling = false;
     private float mPreScale;
 
-    private boolean mAddPaddingToMakeSquare = true;
-
     private GestureCallback mGestureCallback;
 
     private boolean showAnimation = true;
@@ -88,7 +86,6 @@ public class CropperImageView extends ImageView {
         if (attrs != null) {
             TypedArray mTypedArray = context.obtainStyledAttributes(attrs, R.styleable.CropperView);
             mPaintColor = mTypedArray.getColor(R.styleable.CropperView_padding_color, mPaintColor);
-            mAddPaddingToMakeSquare = mTypedArray.getBoolean(R.styleable.CropperView_add_padding_to_make_square, true);
         }
 
         mGestureListener = new GestureListener();
@@ -564,12 +561,7 @@ public class CropperImageView extends ImageView {
         if (xTrans > 0 && yTrans > 0 && scale <= mMinZoom) {
             // No scale/crop required.
             // Add padding if not square
-            if (mAddPaddingToMakeSquare) {
-                return BitmapUtils.addPadding(mBitmap, mPaintColor);
-            } else {
-                return mBitmap;
-            }
-
+            return mBitmap;
         } else {
 
             float cropY = - yTrans / scale;
@@ -617,11 +609,6 @@ public class CropperImageView extends ImageView {
                     // Image is zoomed. Crop from height and add padding to make square
                     bitmap = Bitmap.createBitmap(mBitmap, 0, (int)cropY, mBitmap.getWidth(), (int)Y,
                             outputMatrix, true);
-
-                    if (mAddPaddingToMakeSquare) {
-                        bitmap = BitmapUtils.addPadding(bitmap, mPaintColor);
-                    }
-
                 } else {
                     // Crop from width and height both
                     bitmap = Bitmap.createBitmap(mBitmap, (int) cropX, (int)cropY, (int)X, (int)Y,
@@ -632,11 +619,6 @@ public class CropperImageView extends ImageView {
                     // Image is zoomed. Crop from width and add padding to make square
                     bitmap = Bitmap.createBitmap(mBitmap, (int)cropX, 0, (int)X, mBitmap.getHeight(),
                             outputMatrix, true);
-
-                    if (mAddPaddingToMakeSquare) {
-                        bitmap = BitmapUtils.addPadding(bitmap, mPaintColor);
-                    }
-
                 } else {
                     // Crop from width and height both.
                     bitmap = Bitmap.createBitmap(mBitmap, (int) cropX, (int)cropY, (int)X, (int)Y,
@@ -668,14 +650,6 @@ public class CropperImageView extends ImageView {
 
     public void setPaddingColor(int mPaintColor) {
         this.mPaintColor = mPaintColor;
-    }
-
-    public boolean isMakeSquare() {
-        return mAddPaddingToMakeSquare;
-    }
-
-    public void setMakeSquare(boolean mAddPaddingToMakeSquare) {
-        this.mAddPaddingToMakeSquare = mAddPaddingToMakeSquare;
     }
 
     public void release() {
@@ -827,7 +801,6 @@ public class CropperImageView extends ImageView {
 
                 float currentScale = getScale(matrix);
                 if (currentScale <= mMaxZoom) {
-//                    animator.cancel();
                     return;
                 }
 
